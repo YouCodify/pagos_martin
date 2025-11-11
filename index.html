@@ -328,7 +328,7 @@
                 }
 
                 displayPayments(data.pagos);
-                updateLastModified(data.pagos);
+                // updateLastModified(data.pagos);
             } catch (error) {
                 showError(`Error: ${error.message}`);
             }
@@ -375,23 +375,23 @@
             document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
         }
 
-        function updateLastModified(pagos) {
-            if (pagos.length === 0) {
-                document.getElementById('lastUpdate').textContent = 'Sin registros';
-                return;
-            }
+        // function updateLastModified(pagos) {
+        //     if (pagos.length === 0) {
+        //         document.getElementById('lastUpdate').textContent = 'Sin registros';
+        //         return;
+        //     }
 
-            const lastDate = new Date(pagos[pagos.length - 1].fecha);
-            const formatted = new Intl.DateTimeFormat('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }).format(lastDate);
+        //     const lastDate = new Date(pagos[pagos.length - 1].fecha);
+        //     const formatted = new Intl.DateTimeFormat('es-ES', {
+        //         year: 'numeric',
+        //         month: 'short',
+        //         day: 'numeric',
+        //         hour: '2-digit',
+        //         minute: '2-digit'
+        //     }).format(lastDate);
 
-            document.getElementById('lastUpdate').textContent = `Último: ${formatted}`;
-        }
+        //     document.getElementById('lastUpdate').textContent = `Último: ${formatted}`;
+        // }
 
         function showError(message) {
             const wrapper = document.getElementById('paymentsWrapper');
