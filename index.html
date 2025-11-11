@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Pagos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1a1f2e;
+            --primary-light: #2d3447;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #3f4655;
+            --success: #10b981;
+            --background: linear-gradient(135deg, #1a1f2e 0%, #2d3447 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(45, 52, 71, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .payments-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .payments-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .payments-wrapper::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .payments-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+
+        .payments-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+
+        .payment-item {
+            background: rgba(45, 52, 71, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .payment-item:hover {
+            background: rgba(45, 52, 71, 0.7);
+            border-color: var(--accent);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+
+        .payment-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .payment-amount {
+            font-size: 1.125rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--success), #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+        }
+
+        .payment-date {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(45, 52, 71, 0.98) 100%);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .footer-total {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #ef4444;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-state p {
+            margin-bottom: 1rem;
+        }
+
+        .error-state button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .error-state button:hover {
+            background: var(--accent-light);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .footer {
+                padding: 1rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .footer-label {
+                width: 100%;
+            }
+
+            .footer-total {
+                font-size: 1.5rem;
+            }
+
+            .payment-item {
+                padding: 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .payment-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .payment-amount {
+                align-self: flex-end;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>💳 Lista de Pagos</h1>
+        <p id="lastUpdate">Actualizando...</p>
+    </div>
+
+    <div class="container">
+        <div class="payments-wrapper" id="paymentsWrapper">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <span>Cargando pagos...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-label">Total</div>
+            <div class="footer-total" id="totalAmount">$0.00</div>
+        </div>
+    </div>
+
+    <script>
+        const PAYMENTS_FILE = './pagos.json';
+
+        async function loadPayments() {
+            try {
+                const data = {
+                    "pagos": [
+                        {
+                            "nombre": "Pago de TSS",
+                            "fecha": "2025-11-4",
+                            "monto": 3653.53
+                        }
+                    ]
+                };
+
+
+                if (!Array.isArray(data.pagos)) {
+                    throw new Error('Formato incorrecto en el JSON');
+                }
+
+                displayPayments(data.pagos);
+                updateLastModified(data.pagos);
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            }
+        }
+
+        function displayPayments(pagos) {
+            const wrapper = document.getElementById('paymentsWrapper');
+
+            if (pagos.length === 0) {
+                wrapper.innerHTML = `
+                    <div class="empty-state">
+                        <p>📭 No hay pagos registrados</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">Agrega pagos al archivo pagos.json</p>
+                    </div>
+                `;
+                document.getElementById('totalAmount').textContent = formatMoney(0);
+                return;
+            }
+
+            let total = 0;
+            const html = pagos.map(pago => {
+                const amount = parseFloat(pago.monto) || 0;
+                total += amount;
+
+                const fecha = new Date(pago.fecha);
+                const fechaFormato = new Intl.DateTimeFormat('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }).format(fecha);
+
+                return `
+                    <div class="payment-item">
+                        <div class="payment-header">
+                            <div class="payment-name">${escapeHtml(pago.nombre)}</div>
+                            <div class="payment-amount">${formatMoney(amount)}</div>
+                        </div>
+                        <div class="payment-date">${fechaFormato}</div>
+                    </div>
+                `;
+            }).join('');
+
+            wrapper.innerHTML = html;
+            document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function updateLastModified(pagos) {
+            if (pagos.length === 0) {
+                document.getElementById('lastUpdate').textContent = 'Sin registros';
+                return;
+            }
+
+            const lastDate = new Date(pagos[pagos.length - 1].fecha);
+            const formatted = new Intl.DateTimeFormat('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(lastDate);
+
+            document.getElementById('lastUpdate').textContent = `Último: ${formatted}`;
+        }
+
+        function showError(message) {
+            const wrapper = document.getElementById('paymentsWrapper');
+            wrapper.innerHTML = `
+                <div class="error-state">
+                    <p style="font-size: 1.25rem; margin-bottom: 0.5rem;">⚠️</p>
+                    <p>${message}</p>
+                    <button onclick="location.reload()">Reintentar</button>
+                </div>
+            `;
+            document.getElementById('totalAmount').textContent = formatMoney(0);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'DOP',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+
+        // Cargar pagos al abrir la página
+        loadPayments();
+
+        // Recargar cada 5 segundos para detectar cambios en pagos.json
+        // setInterval(loadPayments, 5000);
+    </script>
+</body>
+
+</html>
